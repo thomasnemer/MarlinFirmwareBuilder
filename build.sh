@@ -21,7 +21,7 @@ MARLIN_CFG_SUBFOLDER="config/examples/Creality/Ender-5 Pro/CrealityV422"
 PLATFORM="STM32F103RC_creality"
 
 # Artefact name, this is the file you will flash on your printer
-FIRMWARE_NAME="Marlin-${MARLIN_SRC_REF}-${PLATFORM}-Ender5Pro-v422-BLTouch.bin"
+FIRMWARE_NAME="Marlin-${MARLIN_SRC_REF}-${PLATFORM}-Ender5Pro-v422-BLTouch_$(date +'%Y%m%d%H%M%S').bin"
 
 # Marlin source repo, you probably don't need to change this
 MARLIN_SRC_REPO=https://github.com/MarlinFirmware/Marlin.git
