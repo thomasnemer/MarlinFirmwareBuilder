@@ -1,27 +1,95 @@
 #!/usr/bin/env bash
 set -e
 
-## Variables, tweak these as you like ##
+function usage(){
+  cat << EOM
+Marlin Firmware Builder
+(rev. $(git rev-parse --short HEAD))
 
-# Marlin source code ref to fetch
-MARLIN_SRC_REF="bugfix-2.1.x"
+Easily build your Marlin firmware.
 
-# Marlin configuration ref to fetch
-# MARLIN_SRC_REF value will be used if empty
-MARLIN_CFG_REF=""
+Usage : ./build.sh --cfg-subfolder <path-to-marlin-config-headers> --platform <platform> [--src-ref <marlin-source-ref>] [--cfg-ref <marlin-cfg-ref>] [--docker-builder-ref <marlin-docker-builder-ref>] [--output <output-filename>]
 
-# Marlin docker-compose.yml file ref to fetch
-# MARLIN_SRC_REF value will be used if empty
-MARLIN_DOCKER_BUILDER_REF="2.1.2"
+Example : ./build.sh -c "config/examples/Creality/Ender-5 Pro/CrealityV422" -p "STM32F103RC_creality" -s "2.1.2"
 
-# Marlin configuration subfolder to use when fetching configurations
-MARLIN_CFG_SUBFOLDER="config/examples/Creality/Ender-5 Pro/CrealityV422"
+Arguments :
 
-# Platform to use for firmware building
-PLATFORM="STM32F103RC_creality"
+[Mandatory]
+-c|--cfg-subfolder : Marlin configuration subfolder, where 'configuration.h' file is found, relative to Marlin configuration repository's root (e.g. 'config/examples/Creality/Ender-5 Pro/CrealityV422')
 
-# Artefact name, this is the file you will flash on your printer
-FIRMWARE_NAME="Marlin-${MARLIN_SRC_REF}-${PLATFORM}-Ender5Pro-v422-BLTouch_$(date +'%Y%m%d%H%M%S').bin"
+-p|--platform : Platform to be used by platformio to perform the build (e.g. 'STM32F103RC_creality')
+
+[Optional]
+-s|--src-ref : Marlin firmware source revision, can be a commit, a tag, a branch (defaults to 'bugfix-2.1.x')
+
+-C|--cfg-ref : Marlin firmware configuration revision, can be a commit, a tag, a branch (defaults to Marlin's source revision)
+
+-d|--docker-builder-ref : Marlin firmware docker builder revision, can be a commit, a tag, a branch, but you probably want to use a tag (defaults to '2.1.2')
+
+-o|--output : Output filename (defaults to "Marlin-<marlin-source-ref>-<platform>_<date>.bin")
+EOM
+}
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -s|--src-ref)
+      MARLIN_SRC_REF="$2"
+      shift
+      shift
+      ;;
+    -C|--cfg-ref)
+      MARLIN_CFG_REF="$2"
+      shift
+      shift
+      ;;
+    -d|--docker-builder-ref)
+      MARLIN_DOCKER_BUILDER_REF="$2"
+      shift
+      shift
+      ;;
+    -c|--cfg-subfolder)
+      MARLIN_CFG_SUBFOLDER="$2"
+      shift
+      shift
+      ;;
+    -p|--platform)
+      PLATFORM="$2"
+      shift
+      shift
+      ;;
+    -o|--output)
+      FIRMWARE_NAME="$2"
+      shift
+      shift
+      ;;
+    -h|--help)
+        usage
+        exit 0
+      ;;
+    -*|--*)
+        usage
+        exit 1
+      ;;
+    *)
+        usage
+        exit 1
+      ;;
+  esac
+done
+
+## Variables, tweak these as you like or provide values at runtime ##
+
+# Default Marlin source code ref to fetch
+[[ -z ${MARLIN_SRC_REF} ]] && MARLIN_SRC_REF="bugfix-2.1.x"
+
+# Default Marlin configuration ref to fetch
+[[ -z ${MARLIN_CFG_REF} ]] && MARLIN_CFG_REF=${MARLIN_SRC_REF}
+
+# Default Marlin docker-compose.yml file ref to fetch
+[[ -z ${MARLIN_DOCKER_BUILDER_REF} ]] && MARLIN_DOCKER_BUILDER_REF="2.1.2"
+
+# Default Artefact name, this is the file you will flash on your printer
+[[ -z ${FIRMWARE_NAME} ]] && FIRMWARE_NAME="Marlin-${MARLIN_SRC_REF}-${PLATFORM}_$(date +'%Y%m%d%H%M%S').bin"
 
 # Marlin source repo, you probably don't need to change this
 MARLIN_SRC_REPO=https://github.com/MarlinFirmware/Marlin.git
@@ -102,11 +170,12 @@ cp --remove-destination --verbose config/*.h ${TMP_SRC}/Marlin/
 printf "\n\033[0;32mSetting up Docker\033[0m\n"
 
 cp --remove-destination --verbose ${TMP_DCK}/docker-compose.yml ${TMP_SRC}/
+cp --remove-destination --verbose -r ${TMP_DCK}/docker ${TMP_SRC}/
 
 cd "${TMP_SRC}"
 
 docker compose build
-docker compose run --rm marlin /code/buildroot/bin/format_code
+docker compose run --rm marlin /code/buildroot/bin/format_code || true
 
 printf "\n\033[0;32mCompiling Marlin for %s\033[0m\n" "${PLATFORM}"
 
