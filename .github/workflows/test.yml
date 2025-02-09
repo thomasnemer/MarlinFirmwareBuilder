@@ -1,0 +1,26 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup commander
+        shell: bash
+        run: |
+          curl -L "https://github.com/commander-cli/commander/releases/download/v2.5.0/commander-linux-amd64" -o commander
+          chmod +x commander
+        
+      - name: Run e2e tests
+        shell: bash
+        run: |
+          ./commander test
+
