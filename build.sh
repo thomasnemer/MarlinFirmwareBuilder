@@ -8,7 +8,7 @@ Marlin Firmware Builder
 
 Easily build your Marlin firmware.
 
-Usage : ./build.sh --cfg-subfolder <path-to-marlin-config-headers> --platform <platform> [--src-ref <marlin-source-ref>] [--cfg-ref <marlin-cfg-ref>] [--docker-builder-ref <marlin-docker-builder-ref>] [--output <output-filename>]
+Usage : ./build.sh --cfg-subfolder <path-to-marlin-config-headers> --platform <platform> [--src-ref <marlin-source-ref>] [--cfg-ref <marlin-cfg-ref>] [--output <output-filename>]
 
 Example : ./build.sh -c "config/examples/Creality/Ender-5 Pro/CrealityV422" -p "STM32F103RC_creality" -s "2.1.2"
 
@@ -24,8 +24,6 @@ Arguments :
 
 -C|--cfg-ref : Marlin firmware configuration revision, can be a commit, a tag, a branch (defaults to Marlin's source revision)
 
--d|--docker-builder-ref : Marlin firmware docker builder revision, can be a commit, a tag, a branch, but you probably want to use a tag (defaults to Marlin's source revision)
-
 -o|--output : Output filename (defaults to "Marlin-<marlin-source-ref>-<platform>_<date>.bin")
 EOM
 }
@@ -39,11 +37,6 @@ while [[ $# -gt 0 ]]; do
     ;;
   -C | --cfg-ref)
     MARLIN_CFG_REF="$2"
-    shift
-    shift
-    ;;
-  -d | --docker-builder-ref)
-    MARLIN_DOCKER_BUILDER_REF="$2"
     shift
     shift
     ;;
@@ -85,9 +78,6 @@ done
 # Default Marlin configuration ref to fetch
 [[ -z ${MARLIN_CFG_REF} ]] && MARLIN_CFG_REF=${MARLIN_SRC_REF}
 
-# Default Marlin Dockerfile ref to fetch
-[[ -z ${MARLIN_DOCKER_BUILDER_REF} ]] && MARLIN_DOCKER_BUILDER_REF=${MARLIN_SRC_REF}
-
 # Default Artifact name, this will be a tar.xz archive containing the .bin firmware to flash as well as the configuration used and build info.
 [[ -z ${FIRMWARE_NAME} ]] && FIRMWARE_NAME="Marlin-${MARLIN_SRC_REF}-${PLATFORM}_$(date +'%Y%m%d%H%M%S')"
 
@@ -124,7 +114,6 @@ command -v docker >/dev/null 2>&1 || {
   exit 1
 }
 [[ -z ${MARLIN_CFG_REF} ]] && MARLIN_CFG_REF=${MARLIN_SRC_REF}
-[[ -z ${MARLIN_DOCKER_BUILDER_REF} ]] && MARLIN_DOCKER_BUILDER_REF=${MARLIN_SRC_REF}
 [[ -z ${MARLIN_CFG_SUBFOLDER} ]] && {
   usage
   exit 1
@@ -181,22 +170,6 @@ else
   cp --update --verbose "${TMP_CFG}/${MARLIN_CFG_SUBFOLDER}"/*.h "${WORKING_DIR}"/config/
 fi
 
-printf "\n\033[0;32mGetting Marlin docker builder source code for branch %s\033[0m\n" "${MARLIN_DOCKER_BUILDER_REF}"
-
-TMP_DCK="${WORKING_DIR}/source/docker/${MARLIN_DOCKER_BUILDER_REF}"
-[[ -d ${TMP_DCK} ]] || mkdir -p "${TMP_DCK}"
-
-if [[ ! $(git -C "${TMP_DCK}" remote -v | grep origin | grep fetch | awk '{print $2}') == "${MARLIN_SRC_REPO}" || $(git -C "${TMP_DCK}" rev-parse HEAD) != $(git -C "${TMP_DCK}" rev-parse "${MARLIN_DOCKER_BUILDER_REF}") ]]; then
-  echo "Cloning Marlin from GitHub to ${TMP_DCK}"
-  git clone --depth=1 --single-branch --branch "${MARLIN_DOCKER_BUILDER_REF}" "${MARLIN_SRC_REPO}" "${TMP_DCK}" || {
-    printf "\n\033[0;31mFailed to clone Marlin Docker builder\033[0m\n"
-    exit 1
-  }
-else
-  echo "Using cached Dockerfile"
-  git -C "${TMP_DCK}" reset --hard HEAD
-fi
-
 # Configure #
 printf "\n\033[0;32mInjecting Configuration\033[0m\n"
 
@@ -204,18 +177,18 @@ cp --remove-destination --verbose config/*.h "${TMP_SRC}"/Marlin/
 
 printf "\n\033[0;32mSetting up Docker\033[0m\n"
 
-cp --remove-destination --verbose -r "${TMP_DCK}"/docker/Dockerfile "${TMP_SRC}"/
+cp --remove-destination --verbose -r "${WORKING_DIR}"/Dockerfile "${TMP_SRC}"/
 
 cd "${TMP_SRC}"
 pwd
-docker build . -t marlin
-docker run --rm -v .:/code marlin /code/buildroot/bin/format_code || true
+docker build --tag marlin --file Dockerfile --build-arg USER_GID="$(id -g)" --build-arg USER_UID="$(id -u)" .
+docker run --user "$(id -u)" --rm -v .:/code marlin /code/buildroot/bin/format_code || true
 
 # Build #
 printf "\n\033[0;32mCompiling Marlin for %s\033[0m\n" "${PLATFORM}"
 
-docker run --rm -v .:/code marlin pio run --target clean -e "${PLATFORM}"
-docker run --rm -v .:/code marlin pio run -e "${PLATFORM}" --silent
+docker run --user "$(id -u)" --rm -v .:/code marlin pio run --target clean -e "${PLATFORM}"
+docker run --user "$(id -u)" --rm -v .:/code marlin pio run -e "${PLATFORM}" --silent
 
 # Pack #
 printf "\n\033[0;32mCopying compiled firmware\033[0m\n"
@@ -231,7 +204,6 @@ fi
   echo "MARLIN_SRC_REF=${MARLIN_SRC_REF}"
   echo "MARLIN_CFG_REPO=${MARLIN_CFG_REPO}"
   echo "MARLIN_CFG_REF=${MARLIN_CFG_REF}"
-  echo "MARLIN_DOCKER_BUILDER_REF=${MARLIN_DOCKER_BUILDER_REF}"
   echo "MARLIN_CFG_SUBFOLDER=${MARLIN_CFG_SUBFOLDER}"
 } >"${WORKING_DIR}/build-info.txt"
 
