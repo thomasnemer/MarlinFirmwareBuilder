@@ -2,7 +2,7 @@
 set -e
 
 function usage() {
-	cat <<EOM
+  cat <<EOM
 Marlin Firmware Builder
 (rev. $(git rev-parse --short HEAD))
 
@@ -31,50 +31,50 @@ EOM
 }
 
 while [[ $# -gt 0 ]]; do
-	case $1 in
-	-s | --src-ref)
-		MARLIN_SRC_REF="$2"
-		shift
-		shift
-		;;
-	-C | --cfg-ref)
-		MARLIN_CFG_REF="$2"
-		shift
-		shift
-		;;
-	-d | --docker-builder-ref)
-		MARLIN_DOCKER_BUILDER_REF="$2"
-		shift
-		shift
-		;;
-	-c | --cfg-subfolder)
-		MARLIN_CFG_SUBFOLDER="$2"
-		shift
-		shift
-		;;
-	-p | --platform)
-		PLATFORM="$2"
-		shift
-		shift
-		;;
-	-o | --output)
-		FIRMWARE_NAME="$2"
-		shift
-		shift
-		;;
-	-h | --help)
-		usage
-		exit 0
-		;;
-	--* | -*)
-		usage
-		exit 1
-		;;
-	*)
-		usage
-		exit 1
-		;;
-	esac
+  case $1 in
+  -s | --src-ref)
+    MARLIN_SRC_REF="$2"
+    shift
+    shift
+    ;;
+  -C | --cfg-ref)
+    MARLIN_CFG_REF="$2"
+    shift
+    shift
+    ;;
+  -d | --docker-builder-ref)
+    MARLIN_DOCKER_BUILDER_REF="$2"
+    shift
+    shift
+    ;;
+  -c | --cfg-subfolder)
+    MARLIN_CFG_SUBFOLDER="$2"
+    shift
+    shift
+    ;;
+  -p | --platform)
+    PLATFORM="$2"
+    shift
+    shift
+    ;;
+  -o | --output)
+    FIRMWARE_NAME="$2"
+    shift
+    shift
+    ;;
+  -h | --help)
+    usage
+    exit 0
+    ;;
+  --* | -*)
+    usage
+    exit 1
+    ;;
+  *)
+    usage
+    exit 1
+    ;;
+  esac
 done
 
 ## Variables, tweak these as you like or provide values at runtime ##
@@ -104,43 +104,43 @@ MARLIN_CFG_REPO=https://github.com/MarlinFirmware/Configurations.git
 # Checks #
 
 command -v git >/dev/null 2>&1 || {
-	printf "\n\033[0;31mYou need git\033[0m\n"
-	exit 1
+  printf "\n\033[0;31mYou need git\033[0m\n"
+  exit 1
 }
 command -v docker >/dev/null 2>&1 || {
-	printf "\n\033[0;31mYou need docker\033[0m\n"
-	exit 1
+  printf "\n\033[0;31mYou need docker\033[0m\n"
+  exit 1
 }
 [[ -z ${MARLIN_SRC_REPO} ]] && {
-	printf "\n\033[0;31mYou need to set MARLIN_SRC_REPO variable\033[0m\n"
-	exit 1
+  printf "\n\033[0;31mYou need to set MARLIN_SRC_REPO variable\033[0m\n"
+  exit 1
 }
 [[ -z ${MARLIN_CFG_REPO} ]] && {
-	printf "\n\033[0;31mYou need to set MARLIN_CFG_REPO variable\033[0m\n"
-	exit 1
+  printf "\n\033[0;31mYou need to set MARLIN_CFG_REPO variable\033[0m\n"
+  exit 1
 }
 [[ -z ${MARLIN_SRC_REF} ]] && {
-	printf "\n\033[0;31mYou need to set MARLIN_SRC_REF variable\033[0m\n"
-	exit 1
+  printf "\n\033[0;31mYou need to set MARLIN_SRC_REF variable\033[0m\n"
+  exit 1
 }
 [[ -z ${MARLIN_CFG_REF} ]] && MARLIN_CFG_REF=${MARLIN_SRC_REF}
 [[ -z ${MARLIN_DOCKER_BUILDER_REF} ]] && MARLIN_DOCKER_BUILDER_REF=${MARLIN_SRC_REF}
 [[ -z ${MARLIN_CFG_SUBFOLDER} ]] && {
-	usage
-	exit 1
+  usage
+  exit 1
 }
 [[ -z ${PLATFORM} ]] && {
-	usage
-	exit 1
+  usage
+  exit 1
 }
 [[ -z ${FIRMWARE_NAME} ]] && {
-	printf "\n\033[0;31mYou need to set FIRMWARE_NAME variable\033[0m\n"
-	exit 1
+  printf "\n\033[0;31mYou need to set FIRMWARE_NAME variable\033[0m\n"
+  exit 1
 }
 
 WORKING_DIR="$(
-	cd "$(dirname "${BASH_SOURCE[0]}")"
-	pwd -P
+  cd "$(dirname "${BASH_SOURCE[0]}")"
+  pwd -P
 )"
 
 # Fetch missing source code #
@@ -151,14 +151,14 @@ TMP_SRC="${WORKING_DIR}/source/firmware/${MARLIN_SRC_REF}"
 [[ -d ${TMP_SRC} ]] || mkdir -p "${TMP_SRC}"
 
 if [[ ! $(git -C "${TMP_SRC}" remote -v | grep origin | grep fetch | awk '{print $2}') == "${MARLIN_SRC_REPO}" || $(git -C "${TMP_SRC}" rev-parse HEAD) != $(git -C "${TMP_SRC}" rev-parse "${MARLIN_SRC_REF}") ]]; then
-	echo "Cloning Marlin from GitHub to ${TMP_SRC}"
-	git clone --depth=1 --single-branch --branch "${MARLIN_SRC_REF}" "${MARLIN_SRC_REPO}" "${TMP_SRC}" || {
-		printf "\n\033[0;31mFailed to clone Marlin\033[0m\n"
-		exit 1
-	}
+  echo "Cloning Marlin from GitHub to ${TMP_SRC}"
+  git clone --depth=1 --single-branch --branch "${MARLIN_SRC_REF}" "${MARLIN_SRC_REPO}" "${TMP_SRC}" || {
+    printf "\n\033[0;31mFailed to clone Marlin\033[0m\n"
+    exit 1
+  }
 else
-	echo "Using cached Marlin at ${TMP_SRC}"
-	git -C "${TMP_SRC}" reset --hard HEAD
+  echo "Using cached Marlin at ${TMP_SRC}"
+  git -C "${TMP_SRC}" reset --hard HEAD
 fi
 
 printf "\n\033[0;32mGetting Marlin Configurations for branch %s\033[0m\n" "${MARLIN_SRC_REF}"
@@ -168,17 +168,17 @@ TMP_CFG="${WORKING_DIR}/source/configurations/${MARLIN_CFG_REF}"
 [[ -d ${TMP_CFG} ]] || mkdir -p "${TMP_CFG}"
 
 if [[ ! $(git -C "${TMP_CFG}" remote -v | grep origin | grep fetch | awk '{print $2}') == "${MARLIN_CFG_REPO}" || $(git -C "${TMP_CFG}" rev-parse HEAD) != $(git -C "${TMP_CFG}" rev-parse "${MARLIN_CFG_REF}") ]]; then
-	echo "Cloning Marlin Configurations from GitHub to ${TMP_CFG}"
-	git clone --depth=1 --single-branch --branch "${MARLIN_CFG_REF}" "${MARLIN_CFG_REPO}" "${TMP_CFG}" || {
-		printf "\n\033[0;31mFailed to clone Configurations\033[0m\n"
-		exit 1
-	}
-	cp --remove-destination --verbose "${TMP_CFG}/${MARLIN_CFG_SUBFOLDER}"/*.h "${WORKING_DIR}"/config/
-	printf "\n\033[0;32m => Configuration initialized. Edit config/*.h and run the script again. <=\033[0m\n"
-	exit 0
+  echo "Cloning Marlin Configurations from GitHub to ${TMP_CFG}"
+  git clone --depth=1 --single-branch --branch "${MARLIN_CFG_REF}" "${MARLIN_CFG_REPO}" "${TMP_CFG}" || {
+    printf "\n\033[0;31mFailed to clone Configurations\033[0m\n"
+    exit 1
+  }
+  cp --remove-destination --verbose "${TMP_CFG}/${MARLIN_CFG_SUBFOLDER}"/*.h "${WORKING_DIR}"/config/
+  printf "\n\033[0;32m => Configuration initialized. Edit config/*.h and run the script again. <=\033[0m\n"
+  exit 0
 else
-	echo "Using cached Configurations at ${TMP_CFG}"
-	cp --update --verbose "${TMP_CFG}/${MARLIN_CFG_SUBFOLDER}"/*.h "${WORKING_DIR}"/config/
+  echo "Using cached Configurations at ${TMP_CFG}"
+  cp --update --verbose "${TMP_CFG}/${MARLIN_CFG_SUBFOLDER}"/*.h "${WORKING_DIR}"/config/
 fi
 
 printf "\n\033[0;32mGetting Marlin docker builder source code for branch %s\033[0m\n" "${MARLIN_DOCKER_BUILDER_REF}"
@@ -187,14 +187,14 @@ TMP_DCK="${WORKING_DIR}/source/docker/${MARLIN_DOCKER_BUILDER_REF}"
 [[ -d ${TMP_DCK} ]] || mkdir -p "${TMP_DCK}"
 
 if [[ ! $(git -C "${TMP_DCK}" remote -v | grep origin | grep fetch | awk '{print $2}') == "${MARLIN_SRC_REPO}" || $(git -C "${TMP_DCK}" rev-parse HEAD) != $(git -C "${TMP_DCK}" rev-parse "${MARLIN_DOCKER_BUILDER_REF}") ]]; then
-	echo "Cloning Marlin from GitHub to ${TMP_DCK}"
-	git clone --depth=1 --single-branch --branch "${MARLIN_DOCKER_BUILDER_REF}" "${MARLIN_SRC_REPO}" "${TMP_DCK}" || {
-		printf "\n\033[0;31mFailed to clone Marlin Docker builder\033[0m\n"
-		exit 1
-	}
+  echo "Cloning Marlin from GitHub to ${TMP_DCK}"
+  git clone --depth=1 --single-branch --branch "${MARLIN_DOCKER_BUILDER_REF}" "${MARLIN_SRC_REPO}" "${TMP_DCK}" || {
+    printf "\n\033[0;31mFailed to clone Marlin Docker builder\033[0m\n"
+    exit 1
+  }
 else
-	echo "Using cached Dockerfile"
-	git -C "${TMP_DCK}" reset --hard HEAD
+  echo "Using cached Dockerfile"
+  git -C "${TMP_DCK}" reset --hard HEAD
 fi
 
 # Configure #
@@ -222,17 +222,17 @@ printf "\n\033[0;32mCopying compiled firmware\033[0m\n"
 
 find "${TMP_SRC}/.pio/build/${PLATFORM}" -name "firmware-*.bin" -exec cp --remove-destination --verbose '{}' "${WORKING_DIR}/${FIRMWARE_NAME}.bin" \;
 if [[ ! -e "${WORKING_DIR}/${FIRMWARE_NAME}.bin" ]]; then
-	printf "\n\033[0;31m => Firmware compilation failed, check logs <=\033[0m\n\n"
-	exit 1
+  printf "\n\033[0;31m => Firmware compilation failed, check logs <=\033[0m\n\n"
+  exit 1
 fi
 
 {
-	echo "MARLIN_SRC_REPO=${MARLIN_SRC_REPO}"
-	echo "MARLIN_SRC_REF=${MARLIN_SRC_REF}"
-	echo "MARLIN_CFG_REPO=${MARLIN_CFG_REPO}"
-	echo "MARLIN_CFG_REF=${MARLIN_CFG_REF}"
-	echo "MARLIN_DOCKER_BUILDER_REF=${MARLIN_DOCKER_BUILDER_REF}"
-	echo "MARLIN_CFG_SUBFOLDER=${MARLIN_CFG_SUBFOLDER}"
+  echo "MARLIN_SRC_REPO=${MARLIN_SRC_REPO}"
+  echo "MARLIN_SRC_REF=${MARLIN_SRC_REF}"
+  echo "MARLIN_CFG_REPO=${MARLIN_CFG_REPO}"
+  echo "MARLIN_CFG_REF=${MARLIN_CFG_REF}"
+  echo "MARLIN_DOCKER_BUILDER_REF=${MARLIN_DOCKER_BUILDER_REF}"
+  echo "MARLIN_CFG_SUBFOLDER=${MARLIN_CFG_SUBFOLDER}"
 } >"${WORKING_DIR}/build-info.txt"
 
 cd "${WORKING_DIR}"
