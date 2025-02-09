@@ -1,6 +1,7 @@
 # Marlin Firmware Builder
 ![format](https://github.com/thomasnemer/MarlinFirmwareBuilder/actions/workflows/format.yml/badge.svg)
 ![lint](https://github.com/thomasnemer/MarlinFirmwareBuilder/actions/workflows/lint.yml/badge.svg)
+![test](https://github.com/thomasnemer/MarlinFirmwareBuilder/actions/workflows/test.yml/badge.svg)
 
 Inspired from https://github.com/ericdraken/MarlinBuilder and the excellent related blog article.
 
