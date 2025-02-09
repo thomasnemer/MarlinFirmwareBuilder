@@ -24,7 +24,7 @@ Arguments :
 
 -C|--cfg-ref : Marlin firmware configuration revision, can be a commit, a tag, a branch (defaults to Marlin's source revision)
 
--d|--docker-builder-ref : Marlin firmware docker builder revision, can be a commit, a tag, a branch, but you probably want to use a tag (defaults to '2.1.2.5')
+-d|--docker-builder-ref : Marlin firmware docker builder revision, can be a commit, a tag, a branch, but you probably want to use a tag (defaults to Marlin's source revision)
 
 -o|--output : Output filename (defaults to "Marlin-<marlin-source-ref>-<platform>_<date>.bin")
 EOM
@@ -86,7 +86,7 @@ done
 [[ -z ${MARLIN_CFG_REF} ]] && MARLIN_CFG_REF=${MARLIN_SRC_REF}
 
 # Default Marlin Dockerfile ref to fetch
-[[ -z ${MARLIN_DOCKER_BUILDER_REF} ]] && MARLIN_DOCKER_BUILDER_REF="2.1.2.5"
+[[ -z ${MARLIN_DOCKER_BUILDER_REF} ]] && MARLIN_DOCKER_BUILDER_REF=${MARLIN_SRC_REF}
 
 # Default Artifact name, this will be a tar.xz archive containing the .bin firmware to flash as well as the configuration used and build info.
 [[ -z ${FIRMWARE_NAME} ]] && FIRMWARE_NAME="Marlin-${MARLIN_SRC_REF}-${PLATFORM}_$(date +'%Y%m%d%H%M%S')"
@@ -167,7 +167,7 @@ cp --remove-destination --verbose config/*.h ${TMP_SRC}/Marlin/
 
 printf "\n\033[0;32mSetting up Docker\033[0m\n"
 
-cp --remove-destination --verbose -r ${TMP_DCK}/docker ${TMP_SRC}/
+cp --remove-destination --verbose -r ${TMP_DCK}/docker/Dockerfile ${TMP_SRC}/
 
 cd "${TMP_SRC}"
 pwd

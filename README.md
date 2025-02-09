@@ -11,14 +11,13 @@ If you want to tweak Marlin source code before building the firmware, fork Marli
 
 * git
 * docker
-* docker compose
 
 ## How to use
 
 * Clone/fork this repo
-* Edit `build.sh` to set variables
-* Run `./build.sh` to init config folder
+* Run `./build.sh` to read about available options
+* Run `./build.sh --cfg-subfolder <path-to-marlin-config-headers> --platform <platform>` to init config folder
 * Edit `config/*.h` as you like
-* Run `./build.sh` again to build the firmware
+* Run `./build.sh --cfg-subfolder <path-to-marlin-config-headers> --platform <platform>` again to build the firmware
 
 That's it!
