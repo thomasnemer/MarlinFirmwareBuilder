@@ -21,3 +21,10 @@ If you want to tweak Marlin source code before building the firmware, fork Marli
 * Run `./build.sh --cfg-subfolder <path-to-marlin-config-headers> --platform <platform>` again to build the firmware
 
 That's it!
+
+## Contribute
+
+I'd be happy to review any contribution, don't hesitate to fork and submit a PR :)
+
+* install [pre-commit](https://pre-commit.com/#install)
+* run `pre-commit install`
