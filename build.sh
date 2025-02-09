@@ -133,6 +133,7 @@ fi
 
 printf "\n\033[0;32mGetting Marlin Configurations for branch %s\033[0m\n" ${MARLIN_SRC_REF}
 
+mkdir -p "${WORKING_DIR}/config"
 TMP_CFG="${WORKING_DIR}/source/configurations/${MARLIN_CFG_REF}"
 [[ -d "${TMP_CFG}" ]] || mkdir -p "${TMP_CFG}"
 
