@@ -92,13 +92,12 @@ MARLIN_CFG_REPO=https://github.com/MarlinFirmware/Configurations.git
 #########################################
 
 # Checks #
-
 command -v git >/dev/null 2>&1 || {
   printf "\n\033[0;31mYou need git\033[0m\n"
   exit 1
 }
-command -v docker >/dev/null 2>&1 || {
-  printf "\n\033[0;31mYou need docker\033[0m\n"
+command -v python >/dev/null 2>&1 || {
+  printf "\n\033[0;31mYou need python\033[0m\n"
   exit 1
 }
 [[ -z ${MARLIN_SRC_REPO} ]] && {
@@ -133,7 +132,6 @@ WORKING_DIR="$(
 )"
 
 # Fetch missing source code #
-
 printf "\n\033[0;32mGetting Marlin source code for branch %s\033[0m\n" "${MARLIN_SRC_REF}"
 
 TMP_SRC="${WORKING_DIR}/source/firmware/${MARLIN_SRC_REF}"
