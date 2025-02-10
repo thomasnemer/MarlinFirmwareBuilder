@@ -174,21 +174,21 @@ fi
 printf "\n\033[0;32mInjecting Configuration\033[0m\n"
 
 cp --remove-destination --verbose config/*.h "${TMP_SRC}"/Marlin/
-
-printf "\n\033[0;32mSetting up Docker\033[0m\n"
-
-cp --remove-destination --verbose -r "${WORKING_DIR}"/Dockerfile "${TMP_SRC}"/
-
+tmp_venv=".venv-$(mktemp -u XXXXX)"
+python -m venv "${tmp_venv}"
+# shellcheck source=/dev/null
+source "./${tmp_venv}/bin/activate"
+pip install --upgrade pip
+pip install -r requirements.txt
+pio upgrade --dev
 cd "${TMP_SRC}"
-pwd
-docker build --tag marlin --file Dockerfile --build-arg USER_GID="$(id -g)" --build-arg USER_UID="$(id -u)" .
-docker run --user "$(id -u)" --rm -v .:/code marlin /code/buildroot/bin/format_code || true
+buildroot/bin/format_code
 
 # Build #
 printf "\n\033[0;32mCompiling Marlin for %s\033[0m\n" "${PLATFORM}"
 
-docker run --user "$(id -u)" --rm -v .:/code marlin pio run --target clean -e "${PLATFORM}"
-docker run --user "$(id -u)" --rm -v .:/code marlin pio run -e "${PLATFORM}" --silent
+pio run --target clean -e "${PLATFORM}"
+pio run -e "${PLATFORM}" --silent
 
 # Pack #
 printf "\n\033[0;32mCopying compiled firmware\033[0m\n"
@@ -213,6 +213,8 @@ tar cvJf "${FIRMWARE_NAME}.tar.xz" build-info.txt "${FIRMWARE_NAME}.bin" config/
 printf "\n\033[0;32mFirmware successfully compiled\033[0m\n"
 
 # Cleanup #
+deactivate
+rm -rf "${tmp_venv}"
 rm -f "${WORKING_DIR}/${FIRMWARE_NAME}.bin" "${WORKING_DIR}/build-info.txt"
 
 printf '\n\033[0;32m => %s.tar.xz <=\033[0m\n\n' "${FIRMWARE_NAME}"

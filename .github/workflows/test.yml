@@ -13,14 +13,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup commander
-        shell: bash
-        run: |
-          curl -L "https://github.com/commander-cli/commander/releases/download/v2.5.0/commander-linux-amd64" -o commander
-          chmod +x commander
-        
       - name: Run e2e tests
         shell: bash
         run: |
-          ./commander test
+          echo "Run a first time to initialize configurations"
+          ./build.sh -c "config/examples/Creality/Ender-5 Pro/CrealityV422" -p "STM32F103RC_creality"
+          echo "Rune a second time to build the firmware"
+          ./build.sh -c "config/examples/Creality/Ender-5 Pro/CrealityV422" -p "STM32F103RC_creality"
 
