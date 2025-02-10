@@ -13,7 +13,7 @@ If you want to tweak Marlin source code before building the firmware, fork Marli
 ## Requirements
 
 * git
-* docker
+* python
 
 ## How to use
 

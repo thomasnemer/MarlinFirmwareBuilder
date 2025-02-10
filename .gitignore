@@ -3,3 +3,4 @@ source
 *.tar.xz
 config
 build-info.txt
+.venv*
