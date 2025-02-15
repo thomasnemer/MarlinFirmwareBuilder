@@ -1,23 +1,24 @@
-name: Test
+name: test
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
-    branches:
-      - 'main'
+    tags: ['*']
+    branches: ['main']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MISE_EXPERIMENTAL: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Run e2e tests
-        shell: bash
-        run: |
-          echo "Run a first time to initialize configurations"
-          ./build.sh -c "config/examples/Creality/Ender-5 Pro/CrealityV422" -p "STM32F103RC_creality"
-          echo "Rune a second time to build the firmware"
-          ./build.sh -c "config/examples/Creality/Ender-5 Pro/CrealityV422" -p "STM32F103RC_creality"
-
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - run: mise run test

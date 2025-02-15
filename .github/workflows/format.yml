@@ -1,29 +1,24 @@
-name: Format
+name: format
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
-    branches:
-      - 'main'
+    tags: ['*']
+    branches: ['main']
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  MISE_EXPERIMENTAL: true
 
 jobs:
   format:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup shfmt
-        uses: mfinelli/setup-shfmt@v3
-        
-      - name: Format using shfmt
-        shell: bash
-        run: |
-          if (( $(shfmt -l . | wc -l) > 0 ));then
-            echo "Code is not properly formatted, please use shfmt."
-            echo "Also, you should install and run commit hooks with pre-commit."
-            exit 1
-          else
-            echo "Code is properly formatted"
-          fi
-          
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - run: mise run format-check

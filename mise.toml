@@ -1,0 +1,33 @@
+[tools]
+pre-commit = "latest"
+shellcheck = "latest"
+shfmt = "latest"
+
+[tasks.format]
+description = "format"
+run = "shfmt -w ." 
+
+[tasks.format-check]
+description = "fail if code is not formatted"
+run = """
+if (( $(shfmt -l . | wc -l) > 0 ));then
+  echo "Code is not properly formatted, please use shfmt."
+  echo "Also, you should install and run commit hooks with pre-commit."
+  exit 1
+else
+  echo "Code is properly formatted"
+fi
+"""
+
+[tasks.lint]
+description = "lint"
+run = 'find . -maxdepth 1 -type f -name "*.sh" -exec shellcheck {} +'
+
+[tasks.test]
+description = "test"
+run = """
+echo "Run a first time to initialize configurations"
+./build.sh -c "config/examples/Creality/Ender-5 Pro/CrealityV422" -p "STM32F103RC_creality"
+echo "Run a second time to build the firmware"
+./build.sh -c "config/examples/Creality/Ender-5 Pro/CrealityV422" -p "STM32F103RC_creality"
+"""
